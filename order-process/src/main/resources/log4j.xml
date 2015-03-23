@@ -11,7 +11,7 @@
 
 	<appender name="FileAppender" class="org.apache.log4j.RollingFileAppender">
 		<param name="Append" value="false" />
-		<param name="File" value="./logs/cxf-helloworld.log" />
+		<param name="File" value="./logs/order-process.log" />
 		<param name="MaxFileSize" value="9048576" />
 		<param name="MaxBackupIndex" value="10" />
 		<param name="BufferSize" value="1000" />
@@ -27,7 +27,7 @@
 	</appender>
 
 	<root>
-		<level value="ERROR" />
+		<level value="INFO" />
 		<appender-ref ref="AsyncFileappender" />
 		<appender-ref ref="console" />
 	</root>

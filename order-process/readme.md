@@ -81,7 +81,7 @@ The URL address must to be relative to the web context. For our example, the end
 The <jaxws:endpoint> element signifies that the CXF internally uses JAX-WS frontend to publish the web service. This element definition provides a short and convenient way to publish a web service. A developer need not have to write any Java class to publish a web service.
 
 ### Running the service
-Execute below command and navigate to http://localhost:8080/
+Execute below command and navigate to http://localhost:8080/service
 
 ```
 mvn clean package spring-boot:run
@@ -90,12 +90,12 @@ mvn clean package spring-boot:run
 If there are no errors the website displays the hosted WSDL address:
 
 ```
-Endpoint address: http://localhost:8080/OrderProcess
+Endpoint address: http://localhost:8080/service/OrderProcess
 WSDL : {http://order.demo/}OrderProcessImplService
 Target namespace: http://order.demo/
 ```
 
-If there are no customization on webservice annotation than the hosted WSDL address is /<context-root>/<SIB>Service. If a serviceName attribute is specified on @WebService annotation of the SEI than the hosted WSDL will be /<context-root>/serviceName.
+**If there are no customization on webservice annotation than the hosted WSDL address is /<context-root>/<SIB>Service. If a serviceName attribute is specified on @WebService annotation of the SEI than the hosted WSDL will be /<context-root>/serviceName.**
 
 ### Developing a client
 
