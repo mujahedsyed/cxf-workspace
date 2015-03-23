@@ -98,5 +98,86 @@ Target namespace: http://order.demo/
 **If there are no customization on webservice annotation than the hosted WSDL address is /<context-root>/<SIB>Service. If a serviceName attribute is specified on @WebService annotation of the SEI than the hosted WSDL will be /<context-root>/serviceName.**
 
 ### Developing a client
+To develop a client we start by writing spring based client configuration file which has jaxws-client bean in it. The following code illustrates client-beans.xml:
 
- 
+```xml
+
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:jaxws="http://cxf.apache.org/jaxws" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+	http://cxf.apache.org/jaxws http://cxf.apache.org/schemas/jaxws.xsd">
+
+	<jaxws:client id="orderClient" serviceClass="demo.order.OrderProcess" 
+	         address="http://localhost:8080/service/OrderProcess"></jaxws:client>
+
+</beans>
+
+```
+
+ The <jaxws:client> element in the client-beans.xml file specifies the client bean using JAX-WS frontend. The element is defined with the following three attributes:
+ - **id** — specifies a unique identifier for a bean. In this case, jaxws:client is a bean and the id name is orderClient . The bean will represent an SEI.
+  - **serviceClass** — specifies the web service SEI. In this case our SEI class is OrderProcess
+  - **address** — specifies the URL address where the endpoint is published. 
+
+<jaxws:client> signifies the client bean that represents an OrderProcess SEI. The client application will make use of this SEI to invoke the web service.
+
+#### Developing the client code
+Below is an example of writing spring boot client that will invoke the deployed service.
+
+```java
+package org.mujahed.controller;
+
+import org.apache.cxf.transport.servlet.CXFServlet;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.context.embedded.ServletRegistrationBean;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ImportResource;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import demo.order.Order;
+import demo.order.OrderProcess;
+
+@SpringBootApplication
+@EnableAutoConfiguration
+@ImportResource({ "classpath:beans.xml", "classpath:client-beans.xml" })
+@RestController
+public class Application {
+
+	public static void main(String[] args) {
+		SpringApplication.run(Application.class, args);
+	}
+
+	@Bean
+	public ServletRegistrationBean servletRegistrationBean() {
+		return new ServletRegistrationBean(new CXFServlet(), "/service/*");
+	}
+
+	@Autowired
+	private ApplicationContext context;
+
+	@RequestMapping("/client")
+	String client() {
+		OrderProcess client = (OrderProcess) context.getBean("orderClient");
+
+		Order order = new Order();
+		order.setCustomerID(java.util.UUID.randomUUID().toString());
+		order.setItemID(java.util.UUID.randomUUID().toString());
+		order.setQty(2);
+		order.setPrice(200.00);
+		String orderID = client.processOrder(order);
+		String message = (orderID == null) ? "Order not approved"
+				: "<h3>Your Order is approved</h3><p><b>Order ID is " + orderID
+						+ "</p></b>";
+		return message;
+	}
+}
+
+```
+
+CXFServlet acts as a front runner component that initiates the CXF environment. 
+**Note** The Spring Boot embedded servlet features are designed to work with Servlet and ServletRegistration @Beans, and not with the ContextLoaderListener. That is why we have defined a ServletRegistration for cxf servlet.
